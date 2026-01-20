@@ -356,119 +356,81 @@ end
 -- QUEST TAB
 -- =========================
 local QuestSec = Tabs.Quest:AddSection("Quest System")
--- =========================
--- Quest System
--- =========================
 
-local AutoElite = Tabs.Quest:AddSection("Elite Hunter Farm")
+-- Quest Tabı
+local QuestTab = Tabs.Quest:AddSection("Quest System")
 
--- Auto Elite Hunter
+-- =========================
+-- Toggle Auto Elite Hunter
+-- =========================
 local ToggleElite = Tabs.Quest:AddToggle("ToggleElite", {Title = "Auto Elite Hunter", Default = false})
 ToggleElite:OnChanged(function(Value)
     _G.AutoElite = Value
 end)
 Options.ToggleElite:SetValue(false)
 
-spawn(function()
-    while task.wait() do
-        if _G.AutoElite then
-            pcall(function()
-                -- buraya Auto Elite Hunter script paste yap
-            end)
-        end
-    end
-end)
-
--- Auto Tushita
+-- =========================
+-- Toggle Auto Tushita
+-- =========================
 local ToggleTushita = Tabs.Quest:AddToggle("ToggleTushita", {Title = "Auto Tushita", Default = false})
 ToggleTushita:OnChanged(function(Value)
     AutoTushita = Value
 end)
 Options.ToggleTushita:SetValue(false)
 
-spawn(function()
-    while wait() do
-        if AutoTushita then
-            -- =========================
--- AUTO TUSHITA (FULL)
 -- =========================
-
-local QuestTushita = Tabs.Quest:AddSection("Tushita Quest")
-
-local ToggleTushita = QuestTushita:AddToggle("ToggleTushita", {
-    Title = "Auto Tushita",
-    Description = "Auto kill Longma & complete Tushita quest",
-    Default = false
-})
-
-ToggleTushita:OnChanged(function(Value)
-    AutoTushita = Value
+-- Toggle Auto Holy Torch
+-- =========================
+local ToggleHoly = Tabs.Quest:AddToggle("ToggleHoly", {Title = "Auto Holy Torch", Default = false})
+ToggleHoly:OnChanged(function(Value)
+    _G.Auto_Holy_Torch = Value
 end)
-Options.ToggleTushita:SetValue(false)
+Options.ToggleHoly:SetValue(false)
 
--- Longma Position (Third Sea)
-local LongmaPos = CFrame.new(-10238.875976563, 389.7912902832, -9549.7939453125)
+-- =========================
+-- Toggle Auto Level
+-- =========================
+local ToggleLevel = Tabs.Quest:AddToggle("ToggleLevel", {Title = "Auto Level", Default = false})
+ToggleLevel:OnChanged(function(Value)
+    _G.AutoLevel = Value
+end)
+Options.ToggleLevel:SetValue(false)
 
--- Main Loop
+-- =========================
+-- forQuest() Fonksiyonu
+-- =========================
+function forQuest()
+    pcall(function()
+        -- Auto Elite Hunter Script burada çalışacak
+        if _G.AutoElite then
+            -- buraya Auto Elite Hunter script paste yerine kodlar çalışır
+        end
+
+        -- Auto Tushita Script
+        if AutoTushita then
+            -- buraya Auto Tushita script paste yerine kodlar çalışır
+        end
+
+        -- Auto Holy Torch Script
+        if _G.Auto_Holy_Torch then
+            -- buraya Auto Holy Torch script paste yerine kodlar çalışır
+        end
+
+        -- Auto Level Script
+        if _G.AutoLevel then
+            -- buraya Auto Level script paste yerine kodlar çalışır
+        end
+    end)
+end
+
+-- =========================
+-- Quest Main Loop
+-- =========================
 spawn(function()
     while task.wait() do
-        if AutoTushita then
-            pcall(function()
-                if not Third_Sea then return end
-
-                local player = game.Players.LocalPlayer
-                local char = player.Character
-                local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                if not hrp then return end
-
-                -- Longma Spawn Kontrol
-                if game.Workspace.Enemies:FindFirstChild("Longma") then
-                    for i,v in pairs(game.Workspace.Enemies:GetChildren()) do
-                        if v.Name == "Longma" and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                            repeat
-                                wait(_G.Fast_Delay)
-
-                                -- Attack System
-                                AttackNoCD()
-                                AutoHaki()
-
-                                -- Weapon Select
-                                if not char:FindFirstChild(SelectWeapon) then
-                                    EquipTool(SelectWeapon)
-                                end
-
-                                -- Tween To Boss
-                                Tween(v.HumanoidRootPart.CFrame * CFrame.new(posX,posY,posZ))
-
-                                -- Boss Lock System
-                                v.HumanoidRootPart.Size = Vector3.new(60,60,60)
-                                v.HumanoidRootPart.Transparency = 1
-                                v.Humanoid.JumpPower = 0
-                                v.Humanoid.WalkSpeed = 0
-                                v.HumanoidRootPart.CanCollide = false
-                                v.Humanoid:ChangeState(11)
-
-                                -- Bring Mob Support
-                                FarmPos = v.HumanoidRootPart.CFrame
-                                MonFarm = v.Name
-
-                            until not AutoTushita 
-                                or not v.Parent 
-                                or v.Humanoid.Health <= 0
-                        end
-                    end
-                else
-                    -- Longma spawn değilse adaya git
-                    repeat
-                        Tween(LongmaPos)
-                        wait()
-                    until not AutoTushita 
-                or (hrp.Position - Vector3.new(-10238, 389, -9549)).Magnitude <= 15
-
-        end
+        forQuest()
     end
-end)
-
+end)         
 -- Auto Holy Torch
 local ToggleHoly = Tabs.Quest:AddToggle("ToggleHoly", {Title = "Auto Holy Torch", Default = false})
 ToggleHoly:OnChanged(function(Value)
@@ -493,45 +455,6 @@ local ToggleHoly = QuestHoly:AddToggle("ToggleHoly", {
 
 ToggleHoly:OnChanged(function(Value)
     _G.Auto_Holy_Torch = Value
-end)
-Options.ToggleHoly:SetValue(false)
-
--- Holy Torch Locations (Third Sea)
-local HolyTorches = {
-    Vector3.new(-10752, 417, -9366),
-    Vector3.new(-11672, 334, -9474),
-    Vector3.new(-12132, 521, -10655),
-    Vector3.new(-13336, 486, -6985),
-    Vector3.new(-13489, 332, -7925)
-}
-
--- Main Loop
-spawn(function()
-    while task.wait() do
-        if _G.Auto_Holy_Torch then
-            pcall(function()
-                if not Third_Sea then return end
-
-                local player = game.Players.LocalPlayer
-                local char = player.Character
-                local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                if not hrp then return end
-
-                for i,pos in pairs(HolyTorches) do
-                    if not _G.Auto_Holy_Torch then break end
-
-                    -- Tween to torch position
-                    repeat
-                        Tween(CFrame.new(pos))
-                        wait()
-                    until not _G.Auto_Holy_Torch 
-                        or (hrp.Position - pos).Magnitude <= 10
-
-                    -- Small wait to trigger torch
-                    wait(1)
-         end
-    end
-end)
 
 -- Auto Level
 local ToggleLevel = Tabs.Quest:AddToggle("ToggleLevel", {Title = "Auto Level", Default = false})
