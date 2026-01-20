@@ -42,11 +42,12 @@ end
 
 -- Auto Haki
 function AutoHaki()
-    pcall(function()
-        if not Character:FindFirstChild("HasBuso") then
-            ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
-        end
-    end)
+    local player = game.Players.LocalPlayer
+    local char = player.Character
+    if not char then return end
+    if not char:FindFirstChild("HasBuso") then
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+    end
 end
 
 -- Equip Weapon
@@ -156,32 +157,6 @@ function EquipTool(tool)
  end
 end
 
--- =========================
--- TWEEN CORE
--- =========================
-function Tween(cf)
- local dist = (HumanoidRootPart.Position - cf.Position).Magnitude
- local speed = dist/300
- local t = TweenService:Create(HumanoidRootPart,TweenInfo.new(speed,Enum.EasingStyle.Linear),{CFrame=cf})
- t:Play()
- return t
-end
-
--- =========================
--- ATTACK CORE
--- =========================
-function AttackNoCD()
- game:GetService("VirtualUser"):Button1Down(Vector2.new(0,0))
-end
-
-function AutoHaki()
-    local player = game.Players.LocalPlayer
-    local char = player.Character
-    if not char then return end
-    if not char:FindFirstChild("HasBuso") then
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
-    end
-end
 
 -- =========================
 -- MAIN FARM TAB
