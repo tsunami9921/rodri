@@ -1823,9 +1823,11 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
-local FlyVelocity = Vector3.new(0,0,0)
-local FlyDirection = Vector3.new(0,0,0)
-local UpDown = 0
+if FlyDirection.Magnitude > 0 then
+    FlyVelocity = FlyDirection.Unit * FlySettings.Speed
+else
+    FlyVelocity = Vector3.new(0, UpDown * FlySettings.Speed, 0)
+                                                                end
 
 local function EnableFly()
     if FlySettings.Enabled then return end
