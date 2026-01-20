@@ -154,9 +154,12 @@ function AttackNoCD()
 end
 
 function AutoHaki()
- if not Character:FindFirstChild("HasBuso") then
-  ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
- end
+    local player = game.Players.LocalPlayer
+    local char = player.Character
+    if not char then return end
+    if not char:FindFirstChild("HasBuso") then
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+    end
 end
 
 -- =========================
