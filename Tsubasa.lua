@@ -34,6 +34,32 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local First_Sea = game.PlaceId == 2753915549
 local Second_Sea = game.PlaceId == 4442272183
 local Third_Sea  = game.PlaceId == 7449423635
+-- =========================
+-- AttackNoCD Fonksiyonu
+-- =========================
+-- Seçilen silah ile cooldown olmadan saldırı yapar
+function AttackNoCD()
+    local player = game.Players.LocalPlayer
+    local char = player.Character
+    if not char then return end
+
+    local tool = char:FindFirstChild(SelectWeapon)
+    if not tool then
+        -- Eğer seçilen silah yoksa backpack'ten silahı al
+        local backpackTool = player.Backpack:FindFirstChild(SelectWeapon)
+        if backpackTool then
+            backpackTool.Parent = char
+            tool = backpackTool
+        else
+            return
+        end
+    end
+
+    -- Silah varsa attack fonksiyonunu tetikle
+    if tool:IsA("Tool") then
+        tool:Activate()
+    end
+end
 
 -- =========================
 -- MONSTER + AREA LIST
