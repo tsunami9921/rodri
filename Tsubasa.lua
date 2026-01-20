@@ -19,14 +19,60 @@ wait(2)
 ScreenGui:Destroy()
 
 -- =========================
--- SERVICES
+-- CORE FUNCTIONS (ZORUNLU)
 -- =========================
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local VirtualUser = game:GetService("VirtualUser")
+
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+-- Attack No Cooldown
+function AttackNoCD()
+    pcall(function()
+        VirtualUser:Button1Down(Vector2.new(0,0))
+        wait()
+        VirtualUser:Button1Up(Vector2.new(0,0))
+    end)
+end
+
+-- Auto Haki
+function AutoHaki()
+    pcall(function()
+        if not Character:FindFirstChild("HasBuso") then
+            ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
+        end
+    end)
+end
+
+-- Equip Weapon
+function EquipTool(ToolName)
+    pcall(function()
+        if Player.Backpack:FindFirstChild(ToolName) then
+            Player.Character.Humanoid:EquipTool(Player.Backpack:FindFirstChild(ToolName))
+        end
+    end)
+end
+
+-- Tween Function
+function Tween(CF)
+    local TweenInfo = TweenInfo.new(
+        (HumanoidRootPart.Position - CF.Position).Magnitude / 300,
+        Enum.EasingStyle.Linear
+    )
+    local tween = TweenService:Create(HumanoidRootPart, TweenInfo, {CFrame = CF})
+    tween:Play()
+    return tween
+end
+
+-- Bypass Teleport
+function BTP(CF)
+    HumanoidRootPart.CFrame = CF
+end
 
 -- =========================
 -- SEA DETECT
@@ -35,31 +81,6 @@ local First_Sea = game.PlaceId == 2753915549
 local Second_Sea = game.PlaceId == 4442272183
 local Third_Sea  = game.PlaceId == 7449423635
 -- =========================
--- AttackNoCD Fonksiyonu
--- =========================
--- Seçilen silah ile cooldown olmadan saldırı yapar
-function AttackNoCD()
-    local player = game.Players.LocalPlayer
-    local char = player.Character
-    if not char then return end
-
-    local tool = char:FindFirstChild(SelectWeapon)
-    if not tool then
-        -- Eğer seçilen silah yoksa backpack'ten silahı al
-        local backpackTool = player.Backpack:FindFirstChild(SelectWeapon)
-        if backpackTool then
-            backpackTool.Parent = char
-            tool = backpackTool
-        else
-            return
-        end
-    end
-
-    -- Silah varsa attack fonksiyonunu tetikle
-    if tool:IsA("Tool") then
-        tool:Activate()
-    end
-end
 
 -- =========================
 -- MONSTER + AREA LIST
