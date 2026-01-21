@@ -1,4 +1,5 @@
 
+-- GUI Loading
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 local Frame = Instance.new("Frame", ScreenGui)
 Frame.Size = UDim2.new(0,300,0,120)
@@ -13,58 +14,70 @@ Text.BackgroundTransparency = 1
 wait(2)
 ScreenGui:Destroy()
 
-
+-- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local VirtualUser = game:GetService("VirtualUser")
 
+-- Player and Character
 local Player = Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart")
+local Humanoid = Character:FindFirstChild("Humanoid")
 
 -- Attack No Cooldown
 function AttackNoCD()
     pcall(function()
-        VirtualUser:Button1Down(Vector2.new(0,0))
-        wait()
-        VirtualUser:Button1Up(Vector2.new(0,0))
+        if VirtualUser then
+            VirtualUser:Button1Down(Vector2.new(0,0))
+            wait()
+            VirtualUser:Button1Up(Vector2.new(0,0))
+        end
     end)
 end
 
 -- Auto Haki
 function AutoHaki()
-    local player = game.Players.LocalPlayer
+    local player = Players.LocalPlayer
     local char = player.Character
     if not char then return end
     if not char:FindFirstChild("HasBuso") then
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+        local remotes = ReplicatedStorage:FindFirstChild("Remotes")
+        if remotes and remotes:FindFirstChild("CommF_") then
+            pcall(function()
+                remotes.CommF_:InvokeServer("Buso")
+            end)
+        end
     end
 end
 
 -- Equip Weapon
 function EquipTool(ToolName)
     pcall(function()
-        if Player.Backpack:FindFirstChild(ToolName) then
-            Player.Character.Humanoid:EquipTool(Player.Backpack:FindFirstChild(ToolName))
+        if not Humanoid then return end
+        local tool = Player.Backpack:FindFirstChild(ToolName)
+        if tool then
+            Humanoid:EquipTool(tool)
         end
     end)
 end
 
 -- Tween Function
 function Tween(CF)
-    local TweenInfo = TweenInfo.new(
-        (HumanoidRootPart.Position - CF.Position).Magnitude / 300,
-        Enum.EasingStyle.Linear
-    )
-    local tween = TweenService:Create(HumanoidRootPart, TweenInfo, {CFrame = CF})
+    if not HumanoidRootPart then return end
+    local distance = (HumanoidRootPart.Position - CF.Position).Magnitude
+    local tweenInfo = TweenInfo.new(distance / 300, Enum.EasingStyle.Linear)
+    local tween = TweenService:Create(HumanoidRootPart, tweenInfo, {CFrame = CF})
     tween:Play()
     return tween
 end
 
 -- Bypass Teleport
 function BTP(CF)
-    HumanoidRootPart.CFrame = CF
+    if HumanoidRootPart then
+        HumanoidRootPart.CFrame = CF
+    end
 end
 
 -- =========================
@@ -115,25 +128,31 @@ local Tabs = {
 }
 
 
-LocalPlayer = game.Players.LocalPlayer
+local LocalPlayer = game:GetService("Players").LocalPlayer
 
 -- =========================
--- GLOBAL FARM SYSTEM
+-- GLOBAL VARIABLES FIX
 -- =========================
-_G.Fast_Delay = 0.15
-_G.FastAttackFaiFao = true
-_G.BringMob = true
-BypassTP = false
-ChooseWeapon = "Melee"
-SelectWeapon = nil
-posX,posY,posZ = 0,20,0
 _G.AutoFarm = false
 _G.AutoBoss = false
 _G.AutoLevel = false
 _G.AutoElite = false
 _G.Factory = false
 _G.Auto_Holy_Torch = false
-AutoTushita = false
+_G.AutoTushita = false
+_G.Fast_Delay = 0.15
+_G.BringMob = true
+BypassTP = false
+SelectWeapon = nil
+ChooseWeapon = "Melee"
+posX,posY,posZ = 0,20,0
+
+-- Quest ve Monster Fix
+NameMon = ""       -- Auto Level / Quest için hedef canavar adı
+NameQuest = ""     -- Quest adı
+QuestLv = 1        -- Quest level
+CFrameQ = CFrame.new(0,0,0) -- Quest noktasına tween pozisyonu
+Ms = ""            -- Monster hedefi (AutoLevel)
 
 
 task.spawn(function()
@@ -149,9 +168,9 @@ task.spawn(function()
 end)
 
 function EquipTool(tool)
- if LocalPlayer.Backpack:FindFirstChild(tool) then
-  LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack[tool])
- end
+    if tool and LocalPlayer.Backpack:FindFirstChild(tool) then
+        LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack[tool])
+    end
 end
 
 
@@ -177,7 +196,7 @@ spawn(function()
                     for i,v in pairs(AreaList) do
                         -- Quest yoksa başlat
                         local QuestGui = LocalPlayer.PlayerGui.Main.Quest
-                        if not QuestGui.Visible or not string.find(QuestGui.Container.QuestTitle.Title.Text, tableMon[i]) then
+if not QuestGui.Visible or not string.find(QuestGui.Container.QuestTitle.Title.Text, tableMon[i]) then
                             -- Abandon Quest
                             ReplicatedStorage.Remotes.CommF_:InvokeServer("AbandonQuest")
                             -- Tween ile quest noktasına git
@@ -279,7 +298,6 @@ local ToggleAutoBoss = Tabs.Main:AddToggle("ToggleAutoFarmBoss", {
 ToggleAutoBoss:OnChanged(function(Value)
     _G.AutoBoss = Value
 end)
-Options.ToggleAutoFarmBoss:SetValue(false)
 
 -- Boss Farm Loop
 spawn(function()
@@ -332,7 +350,6 @@ if Second_Sea then
     ToggleFactory:OnChanged(function(Value)
         _G.Factory = Value
     end)
-    Options.ToggleFactory:SetValue(false)
 
     spawn(function()
         while wait() do
@@ -379,9 +396,6 @@ end
 -- =========================
 local QuestSec = Tabs.Quest:AddSection("Quest System")
 
--- Quest Tabı
-local QuestTab = Tabs.Quest:AddSection("Quest System")
-
 -- =========================
 -- Toggle Auto Elite Hunter
 -- =========================
@@ -389,7 +403,6 @@ local ToggleElite = Tabs.Quest:AddToggle("ToggleElite", {Title = "Auto Elite Hun
 ToggleElite:OnChanged(function(Value)
     _G.AutoElite = Value
 end)
-Options.ToggleElite:SetValue(false)
 
 -- =========================
 -- Toggle Auto Tushita
@@ -398,7 +411,6 @@ local ToggleTushita = Tabs.Quest:AddToggle("ToggleTushita", {Title = "Auto Tushi
 ToggleTushita:OnChanged(function(Value)
     AutoTushita = Value
 end)
-Options.ToggleTushita:SetValue(false)
 
 -- =========================
 -- Toggle Auto Holy Torch
@@ -407,7 +419,6 @@ local ToggleHoly = Tabs.Quest:AddToggle("ToggleHoly", {Title = "Auto Holy Torch"
 ToggleHoly:OnChanged(function(Value)
     _G.Auto_Holy_Torch = Value
 end)
-Options.ToggleHoly:SetValue(false)
 
 -- =========================
 -- Toggle Auto Level
@@ -416,7 +427,6 @@ local ToggleLevel = Tabs.Quest:AddToggle("ToggleLevel", {Title = "Auto Level", D
 ToggleLevel:OnChanged(function(Value)
     _G.AutoLevel = Value
 end)
-Options.ToggleLevel:SetValue(false)
 
 -- =========================
 -- forQuest() Fonksiyonu
@@ -458,7 +468,6 @@ local ToggleHoly = Tabs.Quest:AddToggle("ToggleHoly", {Title = "Auto Holy Torch"
 ToggleHoly:OnChanged(function(Value)
     _G.Auto_Holy_Torch = Value
 end)
-Options.ToggleHoly:SetValue(false)
 
 spawn(function()
     while wait() do
@@ -483,7 +492,6 @@ local ToggleLevel = Tabs.Quest:AddToggle("ToggleLevel", {Title = "Auto Level", D
 ToggleLevel:OnChanged(function(Value)
     _G.AutoLevel = Value
 end)
-Options.ToggleLevel:SetValue(false)
 
 spawn(function()
     while task.wait() do
@@ -500,7 +508,6 @@ local ToggleAutoLevel = QuestSection:AddToggle("ToggleLevel", {
 ToggleAutoLevel:OnChanged(function(Value)
     _G.AutoLevel = Value
 end)
-Options.ToggleLevel:SetValue(false)
 
 -- Auto Level Loop
 spawn(function()
@@ -585,7 +592,6 @@ local ToggleAutoLevel = QuestSection:AddToggle("ToggleLevel", {
 ToggleAutoLevel:OnChanged(function(Value)
     _G.AutoLevel = Value
 end)
-Options.ToggleLevel:SetValue(false)
 
 -- Auto Level Loop
 spawn(function()
@@ -676,7 +682,6 @@ local ToggleElite = QuestElite:AddToggle("ToggleElite", {
 ToggleElite:OnChanged(function(Value)
     _G.AutoElite = Value
 end)
-Options.ToggleElite:SetValue(false)
 
 -- Elite Quest Data
 local EliteNPC = CFrame.new(-5419, 313, -2826) -- Elite Hunter NPC (Third Sea)
@@ -795,7 +800,6 @@ local ToggleTushita = QuestTushita:AddToggle("ToggleTushita", {
 ToggleTushita:OnChanged(function(Value)
     AutoTushita = Value
 end)
-Options.ToggleTushita:SetValue(false)
 
 -- Longma Position (Third Sea)
 local LongmaPos = CFrame.new(-10238.875976563, 389.7912902832, -9549.7939453125)
@@ -881,7 +885,6 @@ local ToggleHoly = QuestHoly:AddToggle("ToggleHoly", {
 ToggleHoly:OnChanged(function(Value)
     _G.Auto_Holy_Torch = Value
 end)
-Options.ToggleHoly:SetValue(false)
 
 -- Holy Torch Locations (Third Sea)
 local HolyTorches = {
@@ -942,7 +945,6 @@ local ToggleFruitTP = FruitSection:AddToggle("ToggleFruitTP", {
 ToggleFruitTP:OnChanged(function(Value)
     _G.AutoFruitTeleport = Value
 end)
-Options.ToggleFruitTP:SetValue(false)
 
 local ToggleFruitNotify = FruitSection:AddToggle("ToggleFruitNotify", {
     Title = "Fruit Notification",
@@ -1036,7 +1038,6 @@ local ToggleAutoRaid = RaidSection:AddToggle("ToggleAutoRaid", {
 ToggleAutoRaid:OnChanged(function(Value)
     _G.AutoRaid = Value
 end)
-Options.ToggleAutoRaid:SetValue(false)
 
 local ToggleAutoNextRaid = RaidSection:AddToggle("ToggleAutoNextRaid", {
     Title = "Auto Next Raid",
@@ -1046,7 +1047,6 @@ local ToggleAutoNextRaid = RaidSection:AddToggle("ToggleAutoNextRaid", {
 ToggleAutoNextRaid:OnChanged(function(Value)
     _G.AutoNextRaid = Value
 end)
-Options.ToggleAutoNextRaid:SetValue(true)
 
 -- Raid Door Position (Second Sea default)
 local RaidDoorCFrame = CFrame.new(-6438.73, 250.645, -4501.506)
