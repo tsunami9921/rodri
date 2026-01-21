@@ -1,9 +1,4 @@
--- Tsuren Hub V3.2 FULL HUB CORE
--- Made by TsurenStudios
 
--- =========================
--- LOADING SCREEN
--- =========================
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 local Frame = Instance.new("Frame", ScreenGui)
 Frame.Size = UDim2.new(0,300,0,120)
@@ -12,15 +7,12 @@ Frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 
 local Text = Instance.new("TextLabel", Frame)
 Text.Size = UDim2.new(1,0,1,0)
-Text.Text = "Tsuren Hub V3.2\nLoading..."
+Text.Text = "Tsuren Hub V3.3\nLoading..."
 Text.TextColor3 = Color3.new(1,1,1)
 Text.BackgroundTransparency = 1
 wait(2)
 ScreenGui:Destroy()
 
--- =========================
--- CORE FUNCTIONS (ZORUNLU)
--- =========================
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -104,15 +96,12 @@ end
 -- =========================
 local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/main.lua"))()
 local Window = Fluent:CreateWindow({
-    Title = "Tsuren Hub V3.2",
+    Title = "TsurenHub",
     SubTitle = "Blox Fruits",
     Size = UDim2.fromOffset(600,480),
     Theme = "Dark"
 })
 
--- =========================
--- TABS
--- =========================
 local Tabs = {
  Main = Window:AddTab({Title="Main Farm",Icon="swords"}),
  Quest = Window:AddTab({Title="Quest",Icon="scroll"}),
@@ -125,6 +114,9 @@ local Tabs = {
  Setting = Window:AddTab({Title="Settings",Icon="sliders"})
 }
 
+
+LocalPlayer = game.Players.LocalPlayer
+
 -- =========================
 -- GLOBAL FARM SYSTEM
 -- =========================
@@ -135,10 +127,15 @@ BypassTP = false
 ChooseWeapon = "Melee"
 SelectWeapon = nil
 posX,posY,posZ = 0,20,0
+_G.AutoFarm = false
+_G.AutoBoss = false
+_G.AutoLevel = false
+_G.AutoElite = false
+_G.Factory = false
+_G.Auto_Holy_Torch = false
+AutoTushita = false
 
--- =========================
--- WEAPON SELECT SYSTEM
--- =========================
+
 task.spawn(function()
  while task.wait() do
   pcall(function()
@@ -1657,21 +1654,26 @@ end
 -- =========================
 -- MISC TAB
 -- =========================
-local MiscSec = Tabs.Misc:AddSection("Misc + ESP")
+local MiscSec = Tabs.Misc:AddSection("Misc/ESP")
 
 -- Island ESP Toggle
-Tabs.Misc:AddToggle("IslandESP",{Title="Island ESP"}):OnChanged(function(v)
- IslandESP = v
+_G.IslandESP = false
+
+ESPSection:AddToggle("IslandESP", {
+    Title = "Island ESP",
+    Default = false
+}):OnChanged(function(v)
+    _G.IslandESP = v
 end)
 
 -- =========================
 -- ISLAND ESP SYSTEM
 -- =========================
 IslandESP = true -- Toggle için default
-
-function round(num)
-    return math.floor(num + 0.5)
+local function round(n)
+return math.floor(tonumber(n) + 0.5)
 end
+Number = math.random(1, 1000000)
 
 function UpdateIslandESP()
     local Players = game:GetService("Players")
