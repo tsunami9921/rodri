@@ -954,7 +954,6 @@ local ToggleFruitNotify = FruitSection:AddToggle("ToggleFruitNotify", {
 ToggleFruitNotify:OnChanged(function(Value)
     _G.FruitNotify = Value
 end)
-Options.ToggleFruitNotify:SetValue(true)
 
 -- Fruit Detection Folder
 local FruitFolder = workspace:FindFirstChild("Fruit") or workspace:FindFirstChild("Fruits")
@@ -981,47 +980,6 @@ local function HasFruit()
 end
 
 -- Main Loop
-spawn(function()
-    while task.wait(1) do
-        if _G.AutoFruitTeleport then
-            pcall(function()
-
-                local player = game.Players.LocalPlayer
-                local char = player.Character
-                local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                if not hrp then return end
-
-                -- Don't pick if already have fruit
-                if HasFruit() then return end
-
-                -- Search dropped fruits
-                for i,v in pairs(workspace:GetChildren()) do
-                    if not _G.AutoFruitTeleport then break end
-
-                    if v:IsA("Tool") and string.find(v.Name, "Fruit") then
-                        local handle = v:FindFirstChild("Handle")
-                        if handle then
-
-                            NotifyFruit(v.Name)
-
-                            -- Tween to fruit
-                            repeat
-                                Tween(handle.CFrame * CFrame.new(0, 2, 0))
-                                wait()
-                            until not _G.AutoFruitTeleport
-                                or (hrp.Position - handle.Position).Magnitude <= 8
-                                or not v.Parent
-
-                            -- Try pick up
-                            wait(0.3)
-                        end
-                    end
-                end
-
-            end)
-        end
-    end
-end)
 
 -- =========================
 -- AUTO RAID SYSTEM
@@ -1039,7 +997,48 @@ ToggleAutoRaid:OnChanged(function(Value)
     _G.AutoRaid = Value
 end)
 
-local ToggleAutoNextRaid = RaidSection:AddToggle("ToggleAutoNextRaid", {
+local ToggleAutoNextRaid = RaidSection:AddTspawn(function()
+    while task.wait(1) do
+        if _G.AutoFruitTeleport then
+            pcall(function()
+
+                local player = game.Players.LocalPlayer
+                local char = player.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+
+                if HasFruit and HasFruit() then return end
+
+                for _,v in pairs(workspace:GetChildren()) do
+                    if not _G.AutoFruitTeleport then break end
+
+                    if v:IsA("Tool") and string.find(v.Name, "Fruit") then
+                        local handle = v:FindFirstChild("Handle")
+                        if handle then
+
+                            if NotifyFruit then
+                                NotifyFruit(v.Name)
+                            end
+
+                            repeat
+                                if not handle or not handle.Parent then break end
+                                Tween(handle.CFrame * CFrame.new(0,2,0))
+                                task.wait()
+                            until not _G.AutoFruitTeleport
+                                or not v.Parent
+                                or (hrp.Position - handle.Position).Magnitude <= 8
+
+                            task.wait(0.3)
+                        end
+                    end
+                end
+
+            end)
+        end
+    end
+end 
+
+    Toggle("ToggleAutoNextRaid", {
     Title = "Auto Next Raid",
     Default = true
 })
@@ -1147,7 +1146,6 @@ local ToggleFruitNotify = FruitNotify:AddToggle("ToggleFruitNotify", {
 ToggleFruitNotify:OnChanged(function(Value)
     _G.FruitNotify = Value
 end)
-Options.ToggleFruitNotify:SetValue(false)
 
 local ToggleAutoFruitTP = FruitNotify:AddToggle("ToggleAutoFruitTP", {
     Title = "Auto Teleport To Fruit",
@@ -1157,7 +1155,6 @@ local ToggleAutoFruitTP = FruitNotify:AddToggle("ToggleAutoFruitTP", {
 ToggleAutoFruitTP:OnChanged(function(Value)
     _G.AutoFruitTP = Value
 end)
-Options.ToggleAutoFruitTP:SetValue(false)
 
 local FruitTimerSlider = FruitNotify:AddSlider("FruitTimer", {
     Title = "Scan Delay (Seconds)",
@@ -1245,7 +1242,6 @@ local ToggleAutoChest = ChestSection:AddToggle("ToggleAutoChest", {
 ToggleAutoChest:OnChanged(function(Value)
     _G.AutoChest = Value
 end)
-Options.ToggleAutoChest:SetValue(false)
 
 local ChestDelaySlider = ChestSection:AddSlider("ChestDelay", {
     Title = "Chest Delay",
@@ -1555,7 +1551,7 @@ if Third_Sea then
         _G.AutoSeaBeast = Value
     end)
 
-    Options.ToggleSeaBeast:SetValue(false)
+    
 
     -- Skill toggles
     _G.SkillZ = true
@@ -1659,7 +1655,7 @@ local MiscSec = Tabs.Misc:AddSection("Misc/ESP")
 -- Island ESP Toggle
 _G.IslandESP = false
 
-ESPSection:AddToggle("IslandESP", {
+Tabs.Misc:AddToggle("IslandESP", {
     Title = "Island ESP",
     Default = false
 }):OnChanged(function(v)
@@ -1737,40 +1733,40 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local plr = game:GetService("Players").LocalPlayer
 
 -- TEAM SECTION
-Misc:Section({Title="Team"})
+Tabs.Misc:Section({Title="Team"})
 
-Misc:Button({Title="Join Pirates Team",Callback=function()
+Tabs.Misc:Button({Title="Join Pirates Team",Callback=function()
     ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Pirates")
 end})
 
-Misc:Button({Title="Join Marines Team",Callback=function()
+Tabs.Misc:Button({Title="Join Marines Team",Callback=function()
     ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Marines")
 end})
 
 -- OPEN UI SECTION
-Misc:Section({Title="Open UI"})
+Tabs.Misc:Section({Title="Open UI"})
 
-Misc:Button({Title="Devil Shop Menu",Callback=function()
+Tabs.Misc:Button({Title="Devil Shop Menu",Callback=function()
     pcall(function()
         ReplicatedStorage.Remotes.CommF_:InvokeServer("GetFruits")
         plr.PlayerGui.Main.FruitShop.Visible = true
     end)
 end})
 
-Misc:Button({Title="Color Haki Menu",Callback=function()
+Tabs.Misc:Button({Title="Color Haki Menu",Callback=function()
     pcall(function()
         plr.PlayerGui.Main.Colors.Visible = true
     end)
 end})
 
-Misc:Button({Title="Title Name Menu",Callback=function()
+Tabs.Misc:Button({Title="Title Name Menu",Callback=function()
     pcall(function()
         ReplicatedStorage.Remotes.CommF_:InvokeServer("getTitles")
         plr.PlayerGui.Main.Titles.Visible = true
     end)
 end})
 
-Misc:Button({Title="Awakening Menu",Callback=function()
+Tabs.Misc:Button({Title="Awakening Menu",Callback=function()
     pcall(function()
         plr.PlayerGui.Main.AwakeningToggler.Visible = true
     end)
@@ -1824,7 +1820,8 @@ local Character = Player.Character or Player.CharacterAdded:Wait()
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-
+local FlyDirection = Vector3.new(0,0,0)
+local UpDown = 0                                                               
 if FlyDirection.Magnitude > 0 then
     FlyVelocity = FlyDirection.Unit * FlySettings.Speed
 else
