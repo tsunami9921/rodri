@@ -114,24 +114,9 @@ end
 -- =========================
 -- UI LOAD
 -- =========================
-local Fluent = nil
-local success, err = pcall(function()
-    -- Try loading the new UI Framework requested
-    Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/x2zu/OPEN-SOURCE-UI-ROBLOX/refs/heads/main/X2ZU%20UI%20ROBLOX%20OPEN%20SOURCE/DummyUi-leak-by-x2zu/fetching-main/Tools/Framework.luau"))()
-end)
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/x2zu/OPEN-SOURCE-UI-ROBLOX/refs/heads/main/X2ZU%20UI%20ROBLOX%20OPEN%20SOURCE/DummyUi-leak-by-x2zu/fetching-main/Tools/Framework.luau"))()
 
-if not success or not Fluent or type(Fluent) ~= "table" or not Fluent.CreateWindow then
-    warn("New UI failed to load or is incompatible. Loading fallback Fluent UI... Error: " .. tostring(err))
-    Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/main.lua"))()
-end
-
--- Fallback check if everything fails
-if not Fluent then
-    game.Players.LocalPlayer:Kick("Failed to load UI Library. Please check your internet connection.")
-    return
-end
-
-local Window = Fluent:CreateWindow({
+local Window = Library:CreateWindow({
     Title = "TsurenHub (Fixed)",
     SubTitle = "Blox Fruits",
     Size = UDim2.fromOffset(600,480),
