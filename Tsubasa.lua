@@ -1595,6 +1595,56 @@ if Third_Sea then
             end
         end
     end)
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+
+function GetChar()
+    return Players.LocalPlayer.Character
+end
+
+function GetHRP()
+    local char = GetChar()
+    return char and char:FindFirstChild("HumanoidRootPart")
+end
+
+function GetHum()
+    local char = GetChar()
+    return char and char:FindFirstChild("Humanoid")
+end
+
+function TweenBoat(CFgo)
+    local hrp = GetHRP()
+    local hum = GetHum()
+    if not hrp or not hum or hum.Health <= 0 then return end
+
+    local dist = (hrp.Position - CFgo.Position).Magnitude
+    local info = TweenInfo.new(dist / 325, Enum.EasingStyle.Linear)
+
+    local tween = TweenService:Create(hrp, info, {CFrame = CFgo})
+    tween:Play()
+
+    local tweenfunc = {}
+    function tweenfunc:Stop()
+        if tween then tween:Cancel() end
+    end
+
+    return tweenfunc
+    end
+
+function EquipAllWeapon()
+    local player = game.Players.LocalPlayer
+    local char = player.Character
+    local hum = char and char:FindFirstChild("Humanoid")
+    if not hum then return end
+
+    for _,tool in pairs(player.Backpack:GetChildren()) do
+        if tool:IsA("Tool") then
+            pcall(function()
+                hum:EquipTool(tool)
+            end)
+        end
+    end
+end
 
     -- Auto Sea Beast Farming
     spawn(function()
