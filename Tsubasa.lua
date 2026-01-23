@@ -1199,20 +1199,26 @@ spawn(function()
                         if not DetectedFruits[v] then
                             DetectedFruits[v] = true
 
-                            local dist = (hrp.Position - v.Handle.Position).Magnitude
+                            local handle = v:FindFirstChild("Handle")
+if handle and handle:IsA("BasePart") then
 
-                            -- Notification
-                            NotifyFruit(v.Name, dist)
+    -- HRP re-check (respawn fix)
+    local char = game.Players.LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
 
-                            -- Auto Teleport
-                            if _G.AutoFruitTP then
-                                Tween(v.Handle.CFrame * CFrame.new(0,3,0))
-                            end
-                        end
-                    end
-                end
+    local dist = (hrp.Position - handle.Position).Magnitude
 
-            end)
+    -- Notification
+    if NotifyFruit then
+        NotifyFruit(v.Name, math.floor(dist))
+    end
+
+    -- Auto Teleport
+    if _G.AutoFruitTP then
+        Tween(handle.CFrame * CFrame.new(0,3,0))
+    end
+                                                                                                        end
 
             wait(_G.FruitScanDelay)
         end
@@ -1652,16 +1658,14 @@ end
 -- =========================
 local MiscSec = Tabs.Misc:AddSection("Misc/ESP")
 
--- Island ESP Toggle
 _G.IslandESP = false
 
-Tabs.Misc:AddToggle("IslandESP", {
+MiscSec:AddToggle("IslandESP", {
     Title = "Island ESP",
     Default = false
 }):OnChanged(function(v)
     _G.IslandESP = v
 end)
-
 -- =========================
 -- ISLAND ESP SYSTEM
 -- =========================
